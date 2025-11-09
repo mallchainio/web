@@ -1,1 +1,761 @@
-ceshi
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MallChain - 链上商城</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f5f5f5;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: #2c2c2c;
+    color: #ff6b6b;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    font-size: 20px;
+    font-weight: bold;
+    z-index: 100;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .theme-toggle {
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px 10px;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    background-color: rgba(255,255,255,0.1);
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .content {
+    padding: 80px 20px 40px;
+  }
+
+  .category-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 20px 0 10px;
+    color: #2c2c2c;
+    position: relative;
+    padding-left: 12px;
+  }
+
+  .category-title::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #2c2c2c;
+    border-radius: 2px;
+  }
+
+  .link-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+  }
+
+  .link-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    color: #333;
+    transition: box-shadow 0.3s, background-color 0.3s, color 0.3s;
+    padding: 12px;
+  }
+  .link-forum {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    color: #333;
+    transition: box-shadow 0.3s, background-color 0.3s, color 0.3s;
+    padding: 12px;
+  }
+
+  .link-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .link-img {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    margin-right: 12px;
+    background-color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .link-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+  }
+
+  .link-img .fallback-text {
+    position: absolute;
+    font-size: 12px;
+    font-weight: bold;
+    color: #555;
+    display: none;
+    text-align: center;
+  }
+
+  .link-info {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-right: 70px; /* 给价格和详情预留空间 */
+  }
+
+  .link-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  .link-summary {
+    font-size: 14px;
+    color: #666;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 10px;
+    padding-right: 5px; /* 微调防止靠右 */
+  }
+
+  .link-price {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-weight: bold;
+    color: #e53935;
+    transition: color 0.3s;
+  }
+
+  .link-detail {
+    position: absolute; 
+    bottom: 1px;
+    right: 15px;
+    font-size: 16px; /* 加大 */
+    font-weight: bold; /* 加粗 */
+    color: #2c2c2c;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-content {
+    background-color: #fff;
+    padding: 20px 30px;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 80%;
+    text-align: center;
+    position: relative;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 10px; right: 15px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+  }
+
+  /* 夜间模式 */
+  body.dark-mode {
+    background-color: #121212;
+    color: #ddd;
+  }
+  body.dark-mode .navbar { background-color: #1e1e1e; }
+  body.dark-mode .theme-toggle { border-color:#fff; color:#fff; background-color:rgba(255,255,255,0.1);}
+  body.dark-mode .category-title { color:#ffffff;}
+  body.dark-mode .category-title::before { background-color:#ffffff;}
+  body.dark-mode .link-item { background-color:#1e1e1e; color:#ddd;}
+  body.dark-mode .link-forum { background-color:#1e1e1e; color:#ddd;}
+  body.dark-mode .link-summary { color:#aaa;}
+  body.dark-mode .link-price { color:#ff6b6b;}
+  body.dark-mode .link-detail { color:#ffffff;}
+  body.dark-mode .modal-content { background-color:#1e1e1e; color:#ddd;}
+  body.dark-mode .footer { color:#aaa;}
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  MallChain 链上商城
+  <span class="theme-toggle" id="themeToggle">🌙</span>
+</div>
+
+<div class="content">
+
+  <!-- 推荐产品 -->
+<div class="category">
+  <div class="category-title">推荐产品</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="MallChain 智能工具包，整合云计算与AI服务，一键部署。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$49">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/2721/2721267.png" alt="智能工具包">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">智能工具包</div>
+          <div class="link-summary">集合AI、API与自动化管理工具的综合方案。</div>
+        </div>
+        <div>
+          <div class="link-price">$49</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="#" class="link-item" data-detail="MallChain 商业云服务，支持多语言站点与支付集成。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$99">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135768.png" alt="商业云服务">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">商业云服务</div>
+          <div class="link-summary">一站式企业建站与部署支持，自动化配置。</div>
+        </div>
+        <div>
+          <div class="link-price">$99</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- 社区产品 -->
+<div class="category">
+  <div class="category-title">社区产品</div>
+  <div class="link-list">
+    <a href="https://t.me/MallChain_io" class="link-forum" data-detail="MallChain 论坛会员权益，解锁专属频道与技术支持。" data-price="$15/yr">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="社区会员">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">社区会员</div>
+          <div class="link-summary">加入 MallChain 技术社区，获取早期测试与内部资源。</div>
+        </div>
+        <div>
+          <div class="link-price">$15/yr</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="https://t.me/MallChain_io" class="link-forum" data-detail="MallChain 代建服务，提供模板、技术指导与一对一支持。" data-price="$49">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/906/906343.png" alt="代建服务">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">代建服务</div>
+          <div class="link-summary">从模板到部署，全程帮你完成上线流程。</div>
+        </div>
+        <div>
+          <div class="link-price">$49</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- 域名服务 -->
+<div class="category">
+  <div class="category-title">域名服务</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="支持 .com / .io / .xyz 等主流后缀，自动续费和隐私保护。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$9/yr">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/481/481479.png" alt="域名注册">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">域名注册服务</div>
+          <div class="link-summary">快速注册与管理个性化域名。</div>
+        </div>
+        <div>
+          <div class="link-price">$9/yr</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- eSIM 服务 -->
+<div class="category">
+  <div class="category-title">eSIM 服务</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="覆盖全球 100+ 国家，无需实体卡，即插即用。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$3/GB">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/869/869636.png" alt="eSIM 全球流量卡">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">eSIM 全球流量卡</div>
+          <div class="link-summary">随时在线，适合出境与旅行用户。</div>
+        </div>
+        <div>
+          <div class="link-price">$3/GB</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- 游戏准备 -->
+<div class="category">
+  <div class="category-title">游戏准备</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="预装主流游戏平台（Steam / Epic / Battle.net），优化网络。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$39">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="游戏准备">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">游戏环境包</div>
+          <div class="link-summary">即装即玩，无需配置，支持加速与云同步。</div>
+        </div>
+        <div>
+          <div class="link-price">$39</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- 云服务器 -->
+<div class="category">
+  <div class="category-title">云服务器</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="香港 / 新加坡 / 美国节点，弹性带宽，可选GPU支持。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$69/mo">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/4257/4257483.png" alt="云服务器">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">云服务器</div>
+          <div class="link-summary">高速低延迟服务器，支持AI训练与建站部署。</div>
+        </div>
+        <div>
+          <div class="link-price">$69/mo</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- AI 工具 -->
+<div class="category">
+  <div class="category-title">AI 工具</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="支持 GPT、Claude、Gemini 等多模型接口接入。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$29/mo">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712107.png" alt="AI 多模型平台">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">AI 多模型平台</div>
+          <div class="link-summary">统一管理与调用不同AI模型的云端系统。</div>
+        </div>
+        <div>
+          <div class="link-price">$29/mo</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- API 接口 -->
+<div class="category">
+  <div class="category-title">API 接口</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="提供天气、汇率、AI分析等多种API，支持Key管理。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$9/mo">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/4423/4423456.png" alt="MallChain API">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">MallChain API 网关</div>
+          <div class="link-summary">多类型API接口统一授权与调用平台。</div>
+        </div>
+        <div>
+          <div class="link-price">$9/mo</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- 电商虚拟资产 -->
+<div class="category">
+  <div class="category-title">电商虚拟资产</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="出售虚拟店铺模板、代运营方案与商城系统源代码。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$199">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/6820/6820853.png" alt="电商虚拟资产">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">虚拟商城模板</div>
+          <div class="link-summary">现成电商模板与代运营资源，一键部署。</div>
+        </div>
+        <div>
+          <div class="link-price">$199</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- 开发者工具 -->
+<div class="category">
+  <div class="category-title">开发者工具</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="MallChain DevKit 包含API调试、日志追踪与SDK工具。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$19/mo">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/875/875209.png" alt="开发者工具包">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">MallChain DevKit</div>
+          <div class="link-summary">一体化开发者平台，支持API调试与日志管理。</div>
+        </div>
+        <div>
+          <div class="link-price">$19/mo</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="#" class="link-item" data-detail="提供Docker模板与自动化部署方案，一键运行环境。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$39">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/732/732200.png" alt="部署工具">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">自动化部署工具</div>
+          <div class="link-summary">快速生成运行环境与持续集成模板。</div>
+        </div>
+        <div>
+          <div class="link-price">$39</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- 安全与隐私 -->
+<div class="category">
+  <div class="category-title">安全与隐私</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="高性能 VPN，全球节点，AES-256 加密保障隐私。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$9/mo">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/2910/2910768.png" alt="VPN服务">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">MallChain VPN</div>
+          <div class="link-summary">高速加密通道，保护你的上网安全。</div>
+        </div>
+        <div>
+          <div class="link-price">$9/mo</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="#" class="link-item" data-detail="API安全防火墙，防止滥用与暴力请求攻击。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$19/mo">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/3130/3130411.png" alt="API防护">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">API 安全网关</div>
+          <div class="link-summary">实时防护接口安全，自动识别攻击模式。</div>
+        </div>
+        <div>
+          <div class="link-price">$19/mo</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- SaaS 平台 -->
+<div class="category">
+  <div class="category-title">SaaS 平台</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="云端 CRM 系统，客户与销售一体化管理。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$29/mo">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/906/906349.png" alt="CRM平台">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">MallChain CRM</div>
+          <div class="link-summary">在线客户关系管理系统，支持团队协作。</div>
+        </div>
+        <div>
+          <div class="link-price">$29/mo</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="#" class="link-item" data-detail="营销自动化系统，支持邮件群发与触发规则。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$49/mo">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/3214/3214765.png" alt="营销自动化">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">营销自动化平台</div>
+          <div class="link-summary">自动化营销方案，适合企业推广与品牌运营。</div>
+        </div>
+        <div>
+          <div class="link-price">$49/mo</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- 数字资产 -->
+<div class="category">
+  <div class="category-title">数字资产</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="MallChain NFT 创作平台，支持图像、音乐和AI生成内容。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$59">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/4372/4372622.png" alt="NFT平台">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">NFT 创作平台</div>
+          <div class="link-summary">轻松发布并交易你的数字艺术作品。</div>
+        </div>
+        <div>
+          <div class="link-price">$59</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="#" class="link-item" data-detail="MallChain 虚拟域名市场，支持 ENS、.bit 等域名绑定钱包。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$29">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/4630/4630978.png" alt="虚拟域名">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">虚拟域名市场</div>
+          <div class="link-summary">链上身份与数字域名绑定的统一平台。</div>
+        </div>
+        <div>
+          <div class="link-price">$29</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Web3 工具 -->
+<div class="category">
+  <div class="category-title">Web3 工具</div>
+  <div class="link-list">
+    <a href="#" class="link-item" data-detail="MallChain 钱包 API 接口，支持 EVM 链、Solana、TON。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$49/mo">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/4144/4144403.png" alt="钱包API">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">Web3 钱包 API</div>
+          <div class="link-summary">轻松集成钱包登录与签名功能。</div>
+        </div>
+        <div>
+          <div class="link-price">$49/mo</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+
+    <a href="#" class="link-item" data-detail="MallChain 智能合约部署平台，一键生成与验证。<br><a href='https://t.me/MallChain_io'>联系管理员</a>" data-price="$99">
+      <div class="link-img">
+        <img src="https://cdn-icons-png.flaticon.com/512/892/892781.png" alt="智能合约平台">
+        <span class="fallback-text">MallChain</span>
+      </div>
+      <div class="link-info">
+        <div>
+          <div class="link-title">智能合约部署平台</div>
+          <div class="link-summary">支持Solidity与Move语言的多链智能合约生成。</div>
+        </div>
+        <div>
+          <div class="link-price">$99</div>
+          <div class="link-detail">详情</div>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+
+<div class="footer">
+  © 2025 MallChain.io 链上商城
+  <br>
+  <span id="visitorCount">你是第 ... 个访问我们的网站</span>
+</div>
+
+<script>
+  fetch('https://forum.mallchain.io/tj.php')
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById('visitorCount').textContent = `你是第 ${data} 个访问我们的网站`;
+    })
+    .catch(err => console.error(err));
+</script>
+
+
+<div class="modal" id="detailModal">
+  <div class="modal-content">
+    <span class="modal-close" id="modalClose">&times;</span>
+    <h3 id="modalTitle"></h3>
+    <p id="modalPrice"></p>
+    <p id="modalDetail"></p>
+  </div>
+</div>
+
+<script>
+  const detailButtons = document.querySelectorAll('.link-item');
+  const modal = document.getElementById('detailModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalPrice = document.getElementById('modalPrice');
+  const modalDetail = document.getElementById('modalDetail');
+  const modalClose = document.getElementById('modalClose');
+
+  detailButtons.forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      const parent = btn.closest('.link-item');
+      modalTitle.textContent = parent.querySelector('.link-title').textContent;
+      modalPrice.textContent = parent.dataset.price;
+      //modalDetail.textContent = parent.dataset.detail;
+      //modalDetail.innerHTML = parent.dataset.detail.replace(/\n/g, '<br>');
+modalDetail.innerHTML = parent.dataset.detail.replace(/\n/g, '<br>');
+
+      modal.style.display = 'flex';
+    });
+  });
+
+  modalClose.addEventListener('click', () => modal.style.display = 'none');
+  window.addEventListener('click', e => { if(e.target === modal) modal.style.display = 'none'; });
+
+  const themeToggle = document.getElementById('themeToggle');
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+  });
+
+  // 图片加载处理
+  document.querySelectorAll('.link-img').forEach(container => {
+    const img = container.querySelector('img');
+    const text = container.querySelector('.fallback-text');
+    if(img) {
+      img.addEventListener('load', () => { text.style.display='none'; img.style.display='block'; });
+      img.addEventListener('error', () => { img.style.display='none'; text.style.display='flex'; text.style.alignItems='center'; text.style.justifyContent='center'; });
+    } else {
+      text.style.display='flex';
+      text.style.alignItems='center';
+      text.style.justifyContent='center';
+    }
+  });
+</script>
+
+</body>
+</html>
