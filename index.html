@@ -1,3 +1,4 @@
+好的，这是整合了所有修改（移除商品链接下划线、为商品标题添加醒目颜色）后的完整 HTML 代码。
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -43,7 +44,7 @@
   }
 
   .content {
-    padding: 80px 20px 40px;
+    padding: 30px 20px 40px; /* <--- 修改: 从 80px 调整为 70px */
   }
 
   .category-title {
@@ -54,7 +55,8 @@
     position: relative;
     padding-left: 12px;
   }
-
+/* ... 保持其余样式不变 ... */
+/* ... 省略了其他未修改的 CSS 规则 ... */
   .category-title::before {
     content: "";
     position: absolute;
@@ -72,26 +74,14 @@
     gap: 15px;
   }
 
-  .link-item {
+  .link-item, .link-forum { /* 合并选择器，应用于商品和论坛链接 */
     position: relative;
     display: flex;
     align-items: center;
     background-color: #fff;
     border-radius: 12px;
     overflow: hidden;
-    text-decoration: none;
-    color: #333;
-    transition: box-shadow 0.3s, background-color 0.3s, color 0.3s;
-    padding: 12px;
-  }
-  .link-forum {
-    position: relative;
-    display: flex;
-    align-items: center;
-    background-color: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    text-decoration: none;
+    text-decoration: none; /* === 移除下划线 === */
     color: #333;
     transition: box-shadow 0.3s, background-color 0.3s, color 0.3s;
     padding: 12px;
@@ -146,6 +136,7 @@
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 5px;
+    color: #ff6b6b; /* === 商品标题醒目颜色 - 日间模式 === */
   }
 
   .link-summary {
@@ -226,14 +217,15 @@
   body.dark-mode .theme-toggle { border-color:#fff; color:#fff; background-color:rgba(255,255,255,0.1);}
   body.dark-mode .category-title { color:#ffffff;}
   body.dark-mode .category-title::before { background-color:#ffffff;}
-  body.dark-mode .link-item { background-color:#1e1e1e; color:#ddd;}
-  body.dark-mode .link-forum { background-color:#1e1e1e; color:#ddd;}
+  body.dark-mode .link-item, body.dark-mode .link-forum { background-color:#1e1e1e; color:#ddd;}
+  body.dark-mode .link-title { color:#ff6b6b;} /* === 商品标题醒目颜色 - 夜间模式 === */
   body.dark-mode .link-summary { color:#aaa;}
   body.dark-mode .link-price { color:#ff6b6b;}
   body.dark-mode .link-detail { color:#ffffff;}
   body.dark-mode .modal-content { background-color:#1e1e1e; color:#ddd;}
   body.dark-mode .footer { color:#aaa;}
 </style>
+
 </head>
 <body>
 
@@ -350,20 +342,6 @@
    */
   function loadProducts() {
     // 假设 sp.php 返回一个包含所有商品对象的 JSON 数组
-    // 示例 JSON 结构:
-    // [
-    //   {
-    //     "category": "推荐产品",
-    //     "title": "智能工具包",
-    //     "summary": "集合AI、API与自动化管理工具的综合方案。",
-    //     "price": "$49",
-    //     "detail": "MallChain 智能工具包，整合云计算与AI服务，一键部署。\n<a href='https://t.me/MallChain_io'>联系管理员</a>",
-    //     "img_url": "https://cdn-icons-png.flaticon.com/512/2721/2721267.png",
-    //     "url": "#",
-    //     "type": "item" // item or forum
-    //   },
-    //   ...
-    // ]
     fetch('https://forum.mallchain.io/sp.php')
       .then(response => {
         if (!response.ok) {
@@ -400,12 +378,9 @@
     const detailButtons = document.querySelectorAll('.link-item, .link-forum');
 
     detailButtons.forEach(btn => {
-      // 移除旧的 listener 防止重复绑定
-      // 由于是动态创建，这里可以直接覆盖或在renderProducts前清空容器
-      // 简单起见，我们直接添加事件，但确保在 renderProducts 中正确调用 bindEvents
-      btn.onclick = (e) => { // 使用 on* 覆盖，或者更好的做法是使用 Event Delegation
+      btn.onclick = (e) => { 
         e.preventDefault(); 
-        const parent = btn; // 已经是 link-item 或 link-forum
+        const parent = btn; 
         modalTitle.textContent = parent.querySelector('.link-title').textContent;
         modalPrice.textContent = parent.dataset.price;
         // 使用 innerHTML 设置详情内容，因为数据中可能包含 <a> 标签
@@ -420,11 +395,8 @@
       const text = container.querySelector('.fallback-text');
       if(img) {
         img.onerror = () => { img.style.display='none'; if(text) { text.style.display='flex'; text.style.alignItems='center'; text.style.justifyContent='center'; } };
-        // Note: load event is not strictly needed if img is block by default
-        if(img.complete && img.naturalHeight !== 0) {
-            // Image loaded successfully on first pass
-        } else if (img.complete) {
-            // Image failed to load on first pass
+        // 检查图片是否已在第一次渲染时加载失败
+        if (img.complete && img.naturalHeight === 0) {
             img.onerror();
         }
       } else {
@@ -447,3 +419,4 @@
 
 </body>
 </html>
+
