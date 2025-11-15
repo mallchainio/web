@@ -44,7 +44,7 @@
   }
 
   .content {
-    padding: 30px 20px 40px; /* <--- 修改: 从 80px 调整为 70px */
+    padding: 30px 20px 40px; /* 从 80px 调整为 70px */
   }
 
   .category-title {
@@ -55,8 +55,7 @@
     position: relative;
     padding-left: 12px;
   }
-/* ... 保持其余样式不变 ... */
-/* ... 省略了其他未修改的 CSS 规则 ... */
+
   .category-title::before {
     content: "";
     position: absolute;
@@ -81,7 +80,7 @@
     background-color: #fff;
     border-radius: 12px;
     overflow: hidden;
-    text-decoration: none; /* === 移除下划线 === */
+    text-decoration: none; /* 移除下划线 */
     color: #333;
     transition: box-shadow 0.3s, background-color 0.3s, color 0.3s;
     padding: 12px;
@@ -136,7 +135,7 @@
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 5px;
-    color: #ff6b6b; /* === 商品标题醒目颜色 - 日间模式 === */
+    color: #ff6b6b; /* 商品标题醒目颜色 - 日间模式 */
   }
 
   .link-summary {
@@ -192,6 +191,15 @@
     position: relative;
     transition: background-color 0.3s, color 0.3s;
   }
+  
+  /* === 新增：模态框内链接样式 === */
+  .modal-content a {
+    text-decoration: none; /* 移除下划线 */
+    color: #ff6b6b;        /* 设置醒目颜色 */
+    font-weight: bold;
+    transition: color 0.3s;
+  }
+  /* =========================== */
 
   .modal-close {
     position: absolute;
@@ -218,13 +226,21 @@
   body.dark-mode .category-title { color:#ffffff;}
   body.dark-mode .category-title::before { background-color:#ffffff;}
   body.dark-mode .link-item, body.dark-mode .link-forum { background-color:#1e1e1e; color:#ddd;}
-  body.dark-mode .link-title { color:#ff6b6b;} /* === 商品标题醒目颜色 - 夜间模式 === */
+  body.dark-mode .link-title { color:#ff6b6b;} /* 商品标题醒目颜色 - 夜间模式 */
   body.dark-mode .link-summary { color:#aaa;}
   body.dark-mode .link-price { color:#ff6b6b;}
   body.dark-mode .link-detail { color:#ffffff;}
   body.dark-mode .modal-content { background-color:#1e1e1e; color:#ddd;}
+  
+  /* === 新增：夜间模式下模态框内链接样式 === */
+  body.dark-mode .modal-content a {
+    color: #ff6b6b; /* 保持一致的醒目色 */
+  }
+  /* =========================== */
+
   body.dark-mode .footer { color:#aaa;}
 </style>
+
 
 </head>
 <body>
