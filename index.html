@@ -1,4 +1,4 @@
-好的，这是整合了所有修改（移除商品链接下划线、为商品标题添加醒目颜色）后的完整 HTML 代码。
+好的，这是整合了所有修改，包括“加载中”提示功能的完整 HTML 代码。
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -44,8 +44,23 @@
   }
 
   .content {
-    padding: 30px 20px 40px; /* 从 80px 调整为 70px */
+    padding: 70px 20px 40px; 
   }
+
+  /* === 新增：加载中样式 === */
+  .loading-message {
+    text-align: center;
+    padding: 50px 0;
+    font-size: 18px;
+    color: #666;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+  }
+  /* ====================== */
 
   .category-title {
     font-size: 22px;
@@ -73,7 +88,7 @@
     gap: 15px;
   }
 
-  .link-item, .link-forum { /* 合并选择器，应用于商品和论坛链接 */
+  .link-item, .link-forum { 
     position: relative;
     display: flex;
     align-items: center;
@@ -147,7 +162,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     margin-bottom: 10px;
-    padding-right: 5px; /* 微调防止靠右 */
+    padding-right: 5px; 
   }
 
   .link-price {
@@ -163,8 +178,8 @@
     position: absolute; 
     bottom: 1px;
     right: 15px;
-    font-size: 16px; /* 加大 */
-    font-weight: bold; /* 加粗 */
+    font-size: 16px; 
+    font-weight: bold; 
     color: #2c2c2c;
     cursor: pointer;
     transition: color 0.3s;
@@ -192,10 +207,10 @@
     transition: background-color 0.3s, color 0.3s;
   }
   
-  /* === 新增：模态框内链接样式 === */
+  /* === 模态框内链接样式 === */
   .modal-content a {
-    text-decoration: none; /* 移除下划线 */
-    color: #ff6b6b;        /* 设置醒目颜色 */
+    text-decoration: none; 
+    color: #ff6b6b;        
     font-weight: bold;
     transition: color 0.3s;
   }
@@ -232,11 +247,14 @@
   body.dark-mode .link-detail { color:#ffffff;}
   body.dark-mode .modal-content { background-color:#1e1e1e; color:#ddd;}
   
-  /* === 新增：夜间模式下模态框内链接样式 === */
+  /* === 夜间模式下模态框内链接样式 === */
   body.dark-mode .modal-content a {
-    color: #ff6b6b; /* 保持一致的醒目色 */
+    color: #ff6b6b; 
   }
   /* =========================== */
+  body.dark-mode .loading-message {
+    color: #aaa;
+  }
 
   body.dark-mode .footer { color:#aaa;}
 </style>
@@ -251,7 +269,10 @@
 </div>
 
 <div class="content" id="productContent">
-  </div>
+  <p class="loading-message" id="loadingMessage">
+    🛒 正在加载链上商品数据...
+  </p>
+</div>
 
 <div class="footer">
   © 2025 MallChain.io 链上商城
@@ -279,8 +300,9 @@
 
   // --- 商品列表动态加载逻辑 ---
 
-  // 主容器
+  // 主容器和加载提示元素
   const productContent = document.getElementById('productContent');
+  let loadingMessage = document.getElementById('loadingMessage'); // 使用 let 方便在 loadProducts 中重新获取
 
   /**
    * 创建单个商品项的 HTML 结构
@@ -291,8 +313,7 @@
     const linkClass = product.type === 'forum' ? 'link-forum' : 'link-item';
     const linkHref = product.url || '#'; // 默认使用 #
     
-    // 注意：这里的 data-detail 使用了 JSON.stringify 来安全地存储可能包含HTML或特殊字符的字符串，
-    // 在详情展示时会进行解析。
+    // 安全地存储详情内容
     return `
       <a href="${linkHref}" class="${linkClass}" data-detail="${product.detail.replace(/"/g, '&quot;').replace(/\n/g, '<br>')}" data-price="${product.price}">
         <div class="link-img">
@@ -318,7 +339,13 @@
    * @param {Array<Object>} products - 商品数组
    */
   function renderProducts(products) {
-    // 1. 按分类对商品进行分组
+    // 1. 移除加载提示
+    const currentLoading = document.getElementById('loadingMessage');
+    if (currentLoading) {
+        currentLoading.remove();
+    }
+    
+    // 2. 按分类对商品进行分组
     const groupedProducts = products.reduce((acc, product) => {
       const category = product.category || '未分类';
       if (!acc[category]) {
@@ -328,7 +355,7 @@
       return acc;
     }, {});
 
-    // 2. 遍历分组，生成分类和列表的 HTML
+    // 3. 遍历分组，生成分类和列表的 HTML
     let finalHTML = '';
     for (const category in groupedProducts) {
       const linkListHTML = groupedProducts[category]
@@ -346,10 +373,10 @@
       finalHTML += categoryHTML;
     }
 
-    // 3. 插入到页面
+    // 4. 插入到页面
     productContent.innerHTML = finalHTML;
     
-    // 4. 重新绑定详情点击事件和图片加载处理
+    // 5. 重新绑定详情点击事件和图片加载处理
     bindEvents();
   }
 
@@ -357,7 +384,10 @@
    * 从 sp.php 加载商品数据
    */
   function loadProducts() {
-    // 假设 sp.php 返回一个包含所有商品对象的 JSON 数组
+    // 确保加载提示可见
+    productContent.innerHTML = `<p class="loading-message" id="loadingMessage">🛒 正在加载链上商品数据...</p>`;
+    loadingMessage = document.getElementById('loadingMessage'); // 重新获取引用
+    
     fetch('https://forum.mallchain.io/sp.php')
       .then(response => {
         if (!response.ok) {
@@ -369,12 +399,14 @@
         if (Array.isArray(data)) {
           renderProducts(data);
         } else {
-          productContent.innerHTML = '<p style="text-align:center; color:red;">商品数据格式错误。</p>';
+          // 移除加载提示，显示错误信息
+          productContent.innerHTML = '<p style="text-align:center; color:red; padding: 50px 0;">商品数据格式错误。</p>';
         }
       })
       .catch(error => {
         console.error('加载商品失败:', error);
-        productContent.innerHTML = `<p style="text-align:center; color:red;">无法加载商品列表。错误信息: ${error.message}</p>`;
+        // 移除加载提示，显示错误信息
+        productContent.innerHTML = `<p style="text-align:center; color:red; padding: 50px 0;">无法加载商品列表。错误信息: ${error.message}</p>`;
       });
   }
 
@@ -395,12 +427,19 @@
 
     detailButtons.forEach(btn => {
       btn.onclick = (e) => { 
+        // 阻止默认跳转行为
         e.preventDefault(); 
+        
+        // 获取父元素的数据
         const parent = btn; 
+        
+        // 填充模态框内容
         modalTitle.textContent = parent.querySelector('.link-title').textContent;
         modalPrice.textContent = parent.dataset.price;
-        // 使用 innerHTML 设置详情内容，因为数据中可能包含 <a> 标签
-        modalDetail.innerHTML = parent.dataset.detail.replace(/&quot;/g, '"').replace(/&amp;/g, '&'); // 简单的反转义
+        // 使用 innerHTML 设置详情内容并反转义
+        modalDetail.innerHTML = parent.dataset.detail.replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+        
+        // 显示模态框
         modal.style.display = 'flex';
       };
     });
@@ -410,7 +449,14 @@
       const img = container.querySelector('img');
       const text = container.querySelector('.fallback-text');
       if(img) {
-        img.onerror = () => { img.style.display='none'; if(text) { text.style.display='flex'; text.style.alignItems='center'; text.style.justifyContent='center'; } };
+        img.onerror = () => { 
+          img.style.display='none'; 
+          if(text) { 
+            text.style.display='flex'; 
+            text.style.alignItems='center'; 
+            text.style.justifyContent='center'; 
+          } 
+        };
         // 检查图片是否已在第一次渲染时加载失败
         if (img.complete && img.naturalHeight === 0) {
             img.onerror();
@@ -421,11 +467,11 @@
     });
   }
   
-  // 模态框关闭事件（只需要绑定一次）
+  // 模态框关闭事件
   modalClose.addEventListener('click', () => modal.style.display = 'none');
   window.addEventListener('click', e => { if(e.target === modal) modal.style.display = 'none'; });
 
-  // 主题切换事件（只需要绑定一次）
+  // 主题切换事件
   const themeToggle = document.getElementById('themeToggle');
   themeToggle.addEventListener('click', () => {
     document.body.classList.toggle('dark-mode');
